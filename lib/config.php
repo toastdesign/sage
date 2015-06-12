@@ -2,7 +2,7 @@
 
 namespace Roots\Sage\Config;
 
-use Roots\Sage\ConditionalTagCheck;
+use Roots\Sage\Utils;
 
 /**
  * Enable theme features
@@ -32,34 +32,29 @@ if (!defined('DIST_DIR')) {
  */
 function display_sidebar() {
   static $display;
-
+  
   if (!isset($display)) {
-    $conditionalCheck = new ConditionalTagCheck(
+    $display = !Utils\conditional_reduction([
       /**
        * Any of these conditional tags that return true won't show the sidebar.
-       * You can also specify your own custom function as long as it returns a boolean.
-       *
-       * To use a function that accepts arguments, use an array instead of just the function name as a string.
+       * You can also specify your own callbacks as long as they each return a boolean.
        *
        * Examples:
        *
-       * 'is_single'
-       * 'is_archive'
-       * ['is_page', 'about-me']
-       * ['is_tax', ['flavor', 'mild']]
-       * ['is_page_template', 'about.php']
-       * ['is_post_type_archive', ['foo', 'bar', 'baz']]
+       * is_single()
+       * is_archive()
+       * is_page('about-me')
+       * is_tax(['flavor', 'mild'])
+       * is_page_template('about.php')
+       * is_post_type_archive(['foo', 'bar', 'baz'])
+       * \MyNamespace\MyClass::MyMethod(['my', 'args'])
        *
        */
-      [
-        'is_404',
-        'is_front_page',
-        ['is_page_template', 'template-custom.php']
-      ]
-    );
-
-    $display = apply_filters('sage/display_sidebar', $conditionalCheck->result);
+      is_404(),
+      is_front_page(),
+      is_page_template('template-custom.php'),
+    ]);
   }
 
-  return $display;
+  return apply_filters('sage/display_sidebar', $display);
 }
